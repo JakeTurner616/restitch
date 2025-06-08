@@ -1,0 +1,29 @@
+[package]
+name = "restitch"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tui = "0.19"
+crossterm = "0.27"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+walkdir = "2"
+tar = "0.4"
+flate2 = "1.0"
+shellexpand = "3"
+dirs = "5"
+clap = { version = "4.5", features = ["derive"] }
+chrono = "0.4.41"
+
+[package.metadata.deb]
+maintainer = "Jake Turner <jake@serverboi.org>"
+description = "Rebuilder: Export and restore Linux configs easily across systems"
+license = "MIT"
+depends = "libc6 (>= 2.29)" # optional but helps prevent older distros from installing
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/rebuilder", "usr/bin/rebuilder", "755"],
+    ["README.md", "usr/share/doc/rebuilder/README", "644"],
+]

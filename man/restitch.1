@@ -1,0 +1,65 @@
+.TH RESTITCH 1 "June 2025" "v0.1.0" "User Commands"
+.SH NAME
+restitch \- backup, restore, and revert Linux config files
+.SH SYNOPSIS
+.B restitch
+[\fI--config-path <path>\fR]
+.br
+.B restitch
+\fB--restore\fR [\fI--archive <path>\fR] [\fI--manifest <path>\fR] [\fI--dry-run\fR]
+.br
+.B restitch
+\fB--revert\fR
+.SH DESCRIPTION
+Restitch is a configuration snapshot utility for Linux and macOS written in Rust.
+
+Use it to:
+.TP
+\- Select and archive dotfiles using an interactive terminal UI.
+.TP
+\- Restore configs cleanly, with dry-run preview support.
+.TP
+\- Revert to previously backed-up configurations automatically.
+
+.SH OPTIONS
+.TP
+\fB--config-path <path>\fR
+Specify a custom TOML file of config targets to include in the archive (default: \fBconfig_targets.toml\fR).
+.TP
+\fB--restore\fR
+Restore from the most recent archive and manifest.
+.TP
+\fB--archive <path>\fR
+Specify a custom .tar.gz archive to restore from.
+.TP
+\fB--manifest <path>\fR
+Specify a custom manifest TOML file to use with the archive.
+.TP
+\fB--dry-run\fR
+Preview the restore operation without applying any changes.
+.TP
+\fB--revert\fR
+Restore from the latest automatic backup in the \fB./backups/\fR directory.
+.TP
+\fB--help\fR
+Display usage help and exit.
+
+.SH FILES
+.TP
+\fBconfig_targets.toml\fR
+TOML file listing the config files to include during backup.
+.TP
+\fBoutputs/restitch-archive.tar.gz\fR
+The archived configuration files.
+.TP
+\fBoutputs/restitch-archive.manifest.toml\fR
+The manifest describing archived paths and labels.
+.TP
+\fBbackups/YYYY-MM-DD_HH-MM-SS/\fR
+Automatic backup snapshots created before restore operations.
+
+.SH AUTHOR
+Jake Turner
+
+.SH SEE ALSO
+tar(1), gzip(1), toml(5)

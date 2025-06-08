@@ -1,0 +1,27 @@
+[[config]]
+name = "Zsh Config"
+path = "~/.zshrc"
+
+[[config]]
+name = "Bash Config"
+path = "~/.bashrc"
+
+[[config]]
+name = "X Init Script"
+path = "~/.xinitrc"
+
+[[config]]
+name = "Kitty Terminal"
+path = "~/.config/kitty"
+
+[[config]]
+name = "XFCE Config"
+path = "~/.config/xfce4"
+
+[[config]]
+name = "Fonts"
+path = "~/.fonts"
+
+[[config]]
+name = "Themes"
+path = "~/.themes/170901-X-Aero"
