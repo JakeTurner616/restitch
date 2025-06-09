@@ -88,5 +88,5 @@ pub fn create_archive(items: &[ConfigItem], archive_name: &str) {
     println!("\n📁 Output Summary:");
     println!("  📦 Archive:   {}", archive_path.display());
     println!("  📝 Manifest:  {}", manifest_path.display());
-    println!("\n✅ Restitch archive complete. Ready to use `--dry-run`");
+    println!("\n✅ Restitch archive complete. Ready to use `--restore --dry-run`");
 }

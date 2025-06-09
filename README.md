@@ -1,7 +1,7 @@
 <a id="readme-top"></a>
 
 <h1 align="center">🧵 RESTITCH</h1>
-<p align="center"><i>Reliable dotfile backup, restore, and revert — from the terminal, in Rust.</i></p>
+<p align="center"><i>Reliable config backup, restore, and revert — from the terminal, in Rust.</i></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/built_with-rust-orange?style=flat-square&logo=rust" />
@@ -13,10 +13,9 @@
 
 ## Overview
 
-**Restitch** is a simple command-line utility for organizing configs and dotfiles:
-backup, restore, and revert system configurations.
+**Restitch** is a simple command-line utility for organizing configs and dotfiles — backup, restore, and revert system configurations.
 
-No-more manually backing up and moving files between installs. Restitch helps you **track, package, and redeploy** your setup — without the bloat of cloud sync or dotfile managers that assume too much.
+No more manually backing up and moving files between installs. Restitch helps you **track, package, and restore your setup across machines**.
 
 ---
 
@@ -24,8 +23,8 @@ No-more manually backing up and moving files between installs. Restitch helps yo
 
 ```bash
 restitch                   # Launch the TUI to select configs and create a backup
-restitch --restore         # Restore from the most recent archive + manifest
 restitch --restore --dry-run   # Preview the restore without applying changes
+restitch --restore         # Restore from the most recent archive + manifest
 restitch --revert          # Revert to the last backup (interactive prompt)
 restitch --help            # CLI reference
 ```
@@ -106,8 +105,8 @@ Prompts you before overwriting current files with a backup from `./backups/`.
 Visit the [Releases Page](https://github.com/JakeTurner616/restitch/releases) and download the archive for your platform:
 
 ```bash
-tar -xzf restitch-v0.1.0-x86_64-unknown-linux-gnu.tar.gz
-sudo cp restitch-v0.1.0-x86_64-unknown-linux-gnu/restitch /usr/local/bin/
+tar -xzf restitch-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
+sudo cp restitch-v0.1.1-x86_64-unknown-linux-gnu/restitch /usr/local/bin/
 ```
 
 > Also available for: `aarch64-unknown-linux-gnu`.

@@ -43,12 +43,18 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    // 🚫 Invalid usage: dry-run without --restore
+    if args.dry_run && !args.restore {
+        eprintln!("❌ '--dry-run' can only be used with '--restore'");
+        std::process::exit(1);
+    }
+
     if args.revert {
         revert::revert();
     }
     else if args.restore {
-        let archive = args.archive.unwrap_or_else(|| "outputs/rebuilder-archive.tar.gz".to_string());
-        let manifest = args.manifest.unwrap_or_else(|| "outputs/rebuilder-archive.manifest.toml".to_string());
+        let archive = args.archive.unwrap_or_else(|| "outputs/restitch-archive.tar.gz".to_string());
+        let manifest = args.manifest.unwrap_or_else(|| "outputs/restitch-archive.manifest.toml".to_string());
         restore::restore_configs(&archive, &manifest, args.dry_run);
     } else {
         match tui::run_ui_with_config(&args.config_path) {
@@ -56,7 +62,7 @@ fn main() {
                 if items.is_empty() {
                     println!("⚠️ No config items selected. Nothing to export.");
                 } else {
-                    packager::create_archive(&items, "rebuilder-archive");
+                    packager::create_archive(&items, "restitch-archive");
                 }
             }
             Err(e) => {

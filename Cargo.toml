@@ -1,6 +1,6 @@
 [package]
 name = "restitch"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [dependencies]
@@ -18,12 +18,12 @@ chrono = "0.4.41"
 
 [package.metadata.deb]
 maintainer = "Jake Turner <jake@serverboi.org>"
-description = "Rebuilder: Export and restore Linux configs easily across systems"
+description = "restitch: Export and restore Linux configs easily across systems"
 license = "MIT"
 depends = "libc6 (>= 2.29)" # optional but helps prevent older distros from installing
 section = "utils"
 priority = "optional"
 assets = [
-    ["target/release/rebuilder", "usr/bin/rebuilder", "755"],
-    ["README.md", "usr/share/doc/rebuilder/README", "644"],
+    ["target/release/restitch", "usr/bin/restitch", "755"],
+    ["README.md", "usr/share/doc/restitch/README", "644"],
 ]
