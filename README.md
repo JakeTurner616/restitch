@@ -127,6 +127,6 @@ sudo cp target/release/restitch /usr/local/bin/
 
 ## License
 
-MIT License — free to use, modify, and distribute.
+[MIT License](LICENSE) — free to use, modify, and distribute.
 
 > Built for terminal users who actually care about their configs.
