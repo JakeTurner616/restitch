@@ -3,3 +3,4 @@ outputs/
 restitch_tmp/
 dist/
 backups/
+restitch_tmp_selected.manifest.toml

@@ -2,7 +2,7 @@
 set -e
 
 APP_NAME="restitch"
-VERSION="v0.1.1"
+VERSION="v0.1.2"
 DIST_DIR="dist"
 
 # Always build for Linux
