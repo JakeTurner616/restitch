@@ -1,5 +1,3 @@
-// tui.rs
-
 use crate::config::ConfigItem;
 use crate::detectors::scan_targets_from_file;
 
@@ -18,14 +16,25 @@ use tui::{
     Terminal,
 };
 
-pub fn run_ui_with_config(config_path: &str) -> io::Result<Vec<ConfigItem>> {
+/// Safely runs the TUI interface with proper terminal cleanup
+pub fn run_ui_with_cleanup(config_path: &str) -> io::Result<Vec<ConfigItem>> {
+    // Load config items before modifying the terminal
+    let mut items = match scan_targets_from_file(config_path) {
+        Ok(i) => i,
+        Err(msg) => {
+            eprintln!("{msg}");
+            eprintln!("💡 Example format:\n\n  [[config]]\n  name = \"Zsh Config\"\n  path = \"~/.zshrc\"\n");
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, msg));
+        }
+    };
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let result = ui_loop(&mut terminal, config_path);
+    let result = ui_loop(&mut terminal, &mut items);
 
     disable_raw_mode()?;
     execute!(
@@ -38,13 +47,12 @@ pub fn run_ui_with_config(config_path: &str) -> io::Result<Vec<ConfigItem>> {
     result
 }
 
+/// Main interactive TUI loop
 fn ui_loop<B: tui::backend::Backend>(
     terminal: &mut Terminal<B>,
-    config_path: &str,
+    items: &mut Vec<ConfigItem>,
 ) -> io::Result<Vec<ConfigItem>> {
-    let mut items = scan_targets_from_file(config_path);
     let mut state = ListState::default();
-
     if !items.is_empty() {
         state.select(Some(0));
     }
@@ -120,5 +128,5 @@ fn ui_loop<B: tui::backend::Backend>(
         }
     }
 
-    Ok(vec![]) // fallback if exited with 'q'
+    Ok(vec![]) // fallback on quit
 }

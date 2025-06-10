@@ -1,24 +1,22 @@
-// revert.rs
-
 use std::fs;
-use std::io::{stdin, stdout, Write};
+use std::io;
 use std::path::PathBuf;
-use chrono::NaiveDateTime;
 
-/// Finds the latest backup directory in ./backups/ or returns an error.
-fn find_latest_backup() -> Option<PathBuf> {
-    let backups_dir = PathBuf::from("backups");
-    let mut entries = fs::read_dir(&backups_dir).ok()?
-        .filter_map(Result::ok)
-        .filter(|e| e.path().is_dir())
-        .collect::<Vec<_>>();
+use crossterm::{
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use tui::{
+    backend::CrosstermBackend,
+    layout::{Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::Span,
+    widgets::{Block, Borders, List, ListItem, ListState},
+    Terminal,
+};
 
-    entries.sort_by_key(|e| e.path());
-    entries.pop().map(|e| e.path())
-}
-
-/// Recursively restore files from backup to their original location.
-fn restore_backup_dir(backup_dir: &PathBuf) -> std::io::Result<()> {
+pub fn restore_backup_dir(backup_dir: &PathBuf) -> std::io::Result<()> {
     for entry in fs::read_dir(backup_dir)? {
         let entry = entry?;
         let entry_path = entry.path().to_path_buf();
@@ -39,41 +37,115 @@ fn restore_backup_dir(backup_dir: &PathBuf) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Main entry point for revert: prompts and restores the latest backup.
-pub fn revert() {
-    let backup = find_latest_backup();
-    if backup.is_none() {
-        println!("❌ No backup directories found in ./backups/");
-        return;
-    }
-    let backup = backup.unwrap();
+pub fn run_revert_ui() -> io::Result<()> {
+    let backups_dir = PathBuf::from("backups");
+    let mut entries = fs::read_dir(&backups_dir)?
+        .filter_map(Result::ok)
+        .filter(|e| e.path().is_dir())
+        .collect::<Vec<_>>();
 
-    let label = backup
-        .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or("unknown");
+    entries.sort_by_key(|e| e.path());
+    entries.reverse(); // newest first
 
-    let ts_hint = NaiveDateTime::parse_from_str(label, "%Y-%m-%d_%H-%M-%S")
-        .map(|ts| format!("{}", ts.format("%b %d, %Y at %H:%M")))
-        .unwrap_or_else(|_| "unknown timestamp".to_string());
-
-    println!("📁 Most recent backup: ./backups/{label}");
-    println!("📅 Created: {}", ts_hint);
-    println!();
-
-    print!("⚠️  This will overwrite your current config files. Proceed? [y/N]: ");
-    stdout().flush().unwrap();
-
-    let mut resp = String::new();
-    stdin().read_line(&mut resp).unwrap();
-    if resp.trim().to_lowercase() != "y" {
-        println!("\n❌ Revert cancelled.");
-        return;
+    if entries.is_empty() {
+        println!("❌ No backups available.");
+        return Ok(());
     }
 
-    println!("\n🚧 Reverting system configs...");
-    match restore_backup_dir(&backup) {
-        Ok(_) => println!("\n✅ Revert complete."),
-        Err(e) => println!("❌ Error during revert: {}", e),
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    let selected = ui_loop(&mut terminal, &entries)?;
+
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    if let Some(index) = selected {
+        let backup_path = entries[index].path();
+        println!("⚠️  This will overwrite your current configs with backup: {}", backup_path.display());
+        println!("Proceeding...\n");
+
+        match restore_backup_dir(&backup_path) {
+            Ok(_) => println!("✅ Revert complete."),
+            Err(e) => println!("❌ Error during revert: {}", e),
+        }
+    }
+
+    Ok(())
+}
+
+fn ui_loop<B: tui::backend::Backend>(
+    terminal: &mut Terminal<B>,
+    entries: &[fs::DirEntry],
+) -> io::Result<Option<usize>> {
+    let mut state = ListState::default();
+    if !entries.is_empty() {
+        state.select(Some(0));
+    }
+
+    loop {
+        terminal.draw(|f| {
+            let size = f.size();
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Min(1), Constraint::Length(2)].as_ref())
+                .split(size);
+
+            let list_items: Vec<ListItem> = entries
+                .iter()
+                .enumerate()
+                .map(|(i, entry)| {
+                    let label = entry.file_name().to_string_lossy().to_string();
+                    let style = if state.selected() == Some(i) {
+                        Style::default().add_modifier(Modifier::REVERSED)
+                    } else {
+                        Style::default()
+                    };
+                    ListItem::new(Span::raw(label)).style(style)
+                })
+                .collect();
+
+            let list = List::new(list_items)
+                .block(Block::default().title("🌀 Restitch: Select Backup to Revert").borders(Borders::ALL))
+                .highlight_symbol(">>");
+
+            f.render_stateful_widget(list, chunks[0], &mut state);
+
+            let help = Block::default()
+                .title("↑↓: Navigate  ↵: Revert Selected  q: Cancel")
+                .borders(Borders::ALL);
+            f.render_widget(help, chunks[1]);
+        })?;
+
+        if event::poll(std::time::Duration::from_millis(200))? {
+            match event::read()? {
+                Event::Key(key) => match key.code {
+                    KeyCode::Char('q') => return Ok(None),
+                    KeyCode::Enter => return Ok(state.selected()),
+                    KeyCode::Down => {
+                        if let Some(i) = state.selected() {
+                            let next = if i >= entries.len() - 1 { 0 } else { i + 1 };
+                            state.select(Some(next));
+                        }
+                    }
+                    KeyCode::Up => {
+                        if let Some(i) = state.selected() {
+                            let prev = if i == 0 { entries.len() - 1 } else { i - 1 };
+                            state.select(Some(prev));
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
     }
 }

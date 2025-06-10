@@ -105,8 +105,8 @@ Prompts you before overwriting current files with a backup from `./backups/`.
 Visit the [Releases Page](https://github.com/JakeTurner616/restitch/releases) and download the archive for your platform:
 
 ```bash
-tar -xzf restitch-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
-sudo cp restitch-v0.1.1-x86_64-unknown-linux-gnu/restitch /usr/local/bin/
+tar -xzf restitch-v0.1.2-x86_64-unknown-linux-gnu.tar.gz
+sudo cp restitch-v0.1.2-x86_64-unknown-linux-gnu/restitch /usr/local/bin/
 ```
 
 > Also available for: `aarch64-unknown-linux-gnu`.
@@ -129,4 +129,4 @@ sudo cp target/release/restitch /usr/local/bin/
 
 [MIT License](LICENSE) — free to use, modify, and distribute.
 
-> Built for terminal users who actually care about their configs.
+> Built for terminal users who care about backing up their configs.
